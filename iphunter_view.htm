@@ -1,0 +1,584 @@
+<%+header%>
+<style>
+    :root {
+        --bg-dark: #0f0f23;
+        --bg-card: #1a1a2e;
+        --accent: #00d4ff;
+        --accent-glow: rgba(0, 212, 255, 0.3);
+        --success: #00ff88;
+        --danger: #ff4757;
+        --warning: #ffa502;
+        --text: #e8e8e8;
+        --text-muted: #8b8b9e;
+        --border: #2a2a4a;
+    }
+
+    * { box-sizing: border-box; }
+
+    .iph-container {
+        max-width: 950px;
+        margin: auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--text);
+    }
+
+    /* Header */
+    .iph-hero {
+        background: linear-gradient(135deg, var(--bg-dark) 0%, #1e1e3f 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .iph-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .iph-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .iph-hero-title h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(90deg, var(--accent), var(--success));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .iph-badge {
+        background: var(--accent);
+        color: #000;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    /* Toggle Switch */
+    .auto-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .auto-toggle span {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--border);
+        border-radius: 26px;
+        transition: 0.4s;
+    }
+
+    .slider::before {
+        content: '';
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: 0.4s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    input:checked + .slider { background: var(--success); }
+    input:checked + .slider::before { transform: translateX(22px); }
+
+    /* Card */
+    .iph-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .iph-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Controls */
+    .controls-grid {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group label {
+        display: block;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-group input::placeholder { color: var(--text-muted); }
+
+    /* Buttons */
+    .iph-btn {
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-start {
+        background: linear-gradient(135deg, var(--success), #00cc6a);
+        color: #000;
+        box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-stop {
+        background: linear-gradient(135deg, var(--danger), #cc3344);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+
+    .btn-stop:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+    }
+
+    .btn-clear {
+        background: var(--bg-dark);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+    }
+
+    .btn-clear:hover {
+        background: var(--border);
+        color: var(--text);
+    }
+
+    /* Console */
+    .console-wrapper {
+        position: relative;
+    }
+
+    .console-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .console-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--danger);
+        animation: pulse 2s infinite;
+    }
+
+    .status-dot.active { background: var(--success); }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .console-info {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .iph-console {
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        height: 400px;
+        overflow-y: auto;
+        font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        padding: 20px;
+        position: relative;
+    }
+
+    .iph-console::-webkit-scrollbar { width: 6px; }
+    .iph-console::-webkit-scrollbar-track { background: var(--bg-dark); }
+    .iph-console::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .log-line {
+        margin-bottom: 4px;
+        opacity: 0;
+        animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    .log-time { color: var(--text-muted); }
+    .log-match { color: var(--success); }
+    .log-mismatch { color: var(--danger); }
+    .log-search { color: var(--accent); }
+    .log-warning { color: var(--warning); }
+    .log-info { color: var(--text); }
+    .log-trigger { color: var(--warning); }
+
+    .log-line[data-type="mismatch"]::before { content: '❌ '; }
+    .log-line[data-type="search"]::before { content: '🔍 '; }
+    .log-line[data-type="match"]::before { content: '✅ '; }
+    .log-line[data-type="online"]::before { content: '🌐 '; }
+    .log-line[data-type="lost"]::before { content: '⚡ '; }
+    .log-line[data-type="trigger"]::before { content: '✈️ '; }
+    .log-line[data-type="recovered"]::before { content: '✨ '; }
+    .log-line[data-type="warning"]::before { content: '⏳ '; }
+
+    /* Stats */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: var(--bg-dark);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid var(--border);
+        transition: 0.3s;
+    }
+
+    .stat-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .controls-grid {
+            grid-template-columns: 1fr;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .iph-hero {
+            flex-direction: column;
+            gap: 15px;
+        }
+    }
+
+    /* Scrollbar track in console */
+    .console-scroll-hint {
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+        font-size: 10px;
+        color: var(--text-muted);
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<div class="iph-container">
+    <!-- Hero Header -->
+    <div class="iph-hero">
+        <div class="iph-hero-title">
+            <h2>🎯 IP Hunter Pro</h2>
+            <span class="iph-badge">v2.0</span>
+        </div>
+        <div class="auto-toggle">
+            <span>Auto Boot</span>
+            <label class="switch">
+                <input type="checkbox" id="auto_toggle" onclick="handleAutoBoot(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-value" id="statMatches">0</div>
+            <div class="stat-label">Matches</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statSwitches">0</div>
+            <div class="stat-label">IP Switches</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statUptime">00:00:00</div>
+            <div class="stat-label">Uptime</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statCurrentIp">---</div>
+            <div class="stat-label">Current IP</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="iph-card">
+        <div class="iph-card-title">⚙️ Controls</div>
+        <div class="controls-grid">
+            <div class="input-group">
+                <label>IP Range (contoh: 0-9, 130-159)</label>
+                <input type="text" id="ip_range" placeholder="10.0-10.20, 10.130-10.159" onchange="saveIpRange()">
+            </div>
+            <button class="iph-btn btn-start" onclick="doAction('start')">▶ START</button>
+            <button class="iph-btn btn-stop" onclick="doAction('stop')">⏹ STOP</button>
+            <button class="iph-btn btn-clear" onclick="clearLog()">🗑</button>
+        </div>
+    </div>
+
+    <!-- Console -->
+    <div class="iph-card">
+        <div class="console-wrapper">
+            <div class="console-header">
+                <div class="console-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                <div class="console-info">Live monitoring • Auto-scroll enabled</div>
+            </div>
+            <div id="log_content" class="iph-console">Initializing system...</div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Stats tracking
+    let stats = {
+        matches: 0,
+        switches: 0,
+        startTime: null,
+        currentIp: null
+    };
+
+    function updateStats(type, value) {
+        switch(type) {
+            case 'match':
+                stats.matches++;
+                document.getElementById('statMatches').textContent = stats.matches;
+                break;
+            case 'switch':
+                stats.switches++;
+                document.getElementById('statSwitches').textContent = stats.switches;
+                break;
+            case 'ip':
+                stats.currentIp = value;
+                document.getElementById('statCurrentIp').textContent = value || '---';
+                break;
+            case 'start':
+                stats.startTime = new Date();
+                break;
+        }
+    }
+
+    function updateUptime() {
+        if (!stats.startTime) return;
+        const diff = Math.floor((new Date() - stats.startTime) / 1000);
+        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        document.getElementById('statUptime').textContent = `${h}:${m}:${s}`;
+    }
+
+    setInterval(updateUptime, 1000);
+
+    // Action handlers
+    function doAction(command) {
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_action")%>', { cmd: command }, null);
+        if (command === 'start') {
+            updateStats('start');
+            document.getElementById('statusDot').classList.add('active');
+            document.getElementById('statusText').textContent = 'Running';
+        }
+    }
+
+    function handleAutoBoot(cb) {
+        var mode = cb.checked ? 'enable' : 'disable';
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_action")%>', { cmd: mode }, function(x) {});
+    }
+
+    function checkAutoStatus() {
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_get_auto")%>', null, function(x) {
+            var s = x.responseText.trim();
+            var cb = document.getElementById('auto_toggle');
+            cb.checked = (s == "1");
+        });
+    }
+
+    function clearLog() {
+        if(confirm("Hapus seluruh log?")) {
+            new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_clear")%>', null, null);
+            document.getElementById('log_content').innerHTML = '<span style="color: var(--text-muted)">Log cleared...</span>';
+        }
+    }
+
+    function saveIpRange() {
+        var range = document.getElementById('ip_range').value;
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_save_range")%>', { range: range }, function(x) {});
+    }
+
+    function loadIpRange() {
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_get_range")%>', null, function(x) {
+            if (x && x.responseText) {
+                var val = x.responseText.trim();
+                if (val) document.getElementById('ip_range').value = val;
+            }
+        });
+    }
+
+    function detectLogType(line) {
+        var l = line.toLowerCase();
+        if (l.includes('match')) return 'match';
+        if (l.includes('mismatch')) return 'mismatch';
+        if (l.includes('searching') || l.includes('search')) return 'search';
+        if (l.includes('online') || l.includes('connected')) return 'online';
+        if (l.includes('lost') || l.includes('disconnected')) return 'lost';
+        if (l.includes('switch')) return 'switch';
+        if (l.includes('trigger') || l.includes('airplane')) return 'trigger';
+        if (l.includes('recovered')) return 'recovered';
+        if (l.includes('retry') || l.includes('jitter')) return 'warning';
+        return 'info';
+    }
+
+    function formatLog(text) {
+        var lines = text.split('\n');
+        var html = '';
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+
+            // Extract time from log line
+            var timeMatch = line.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+            var time = timeMatch ? timeMatch[1] : '';
+
+            // Determine type
+            var type = detectLogType(line);
+
+            // Extract IP if present
+            var ipMatch = line.match(/(\d+\.\d+\.\d+\.\d+)/);
+            if (ipMatch) updateStats('ip', ipMatch[1]);
+            if (type === 'match') updateStats('match');
+            if (type === 'switch') updateStats('switch');
+
+            // Format
+            var displayLine = line.replace(/^\[[^\]]+\]\s*/, ''); // Remove timestamp
+            html += '<div class="log-line" data-type="' + type + '">';
+            if (time) html += '<span class="log-time">[' + time + ']</span> ';
+            html += displayLine + '</div>';
+        }
+        return html || '<span style="color: var(--text-muted)">Waiting for activity...</span>';
+    }
+
+    // Initialize
+    checkAutoStatus();
+    loadIpRange();
+
+    // Update status
+    document.getElementById('statusText').textContent = 'Connected';
+    document.getElementById('statusDot').classList.add('active');
+
+    // Live log loop
+    setInterval(function() {
+        new XHR().get('<%=luci.dispatcher.build_url("admin/status/iphunter_log")%>', null, function(x) {
+            if (x && x.responseText) {
+                var content = document.getElementById('log_content');
+                content.innerHTML = formatLog(x.responseText);
+                content.scrollTop = content.scrollHeight;
+            }
+        });
+    }, 1500);
+</script>
+<%+footer%>

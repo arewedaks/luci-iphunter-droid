@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# Jalur file
+LOG_FILE="/tmp/ip_hunter.log"
+PID_FILE="/var/run/iphunter.pid"
+SCRIPT_PATH="/usr/bin/iphunter-core"
+
+case "$1" in
+    start)
+        if [ -f "$PID_FILE" ]; then
+            echo "IP Hunter sudah berjalan!"
+        else
+            echo "Memulai IP Hunter..."
+            $SCRIPT_PATH &
+            echo $! > "$PID_FILE"
+            echo "[$(date)] --- SERVICE STARTED ---" > "$LOG_FILE"
+        fi
+        ;;
+    stop)
+        if [ -f "$PID_FILE" ]; then
+            kill $(cat "$PID_FILE")
+            rm "$PID_FILE"
+            echo "IP Hunter dihentikan."
+            echo "[$(date)] --- SERVICE STOPPED ---" >> "$LOG_FILE"
+        else
+            echo "IP Hunter tidak sedang berjalan."
+        fi
+        ;;
+    status)
+        if [ -f "$PID_FILE" ]; then
+            echo "STATUS: Berjalan (PID: $(cat $PID_FILE))"
+        else
+            echo "STATUS: Berhenti"
+        fi
+        ;;
+    log)
+        tail -n 30 "$LOG_FILE"
+        ;;
+esac

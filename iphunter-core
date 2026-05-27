@@ -1,0 +1,122 @@
+#!/bin/sh
+LOG_FILE="/tmp/ip_hunter.log"
+CONFIG_FILE="/tmp/ip_hunter_range.conf"
+
+# Default range if config not found
+DEFAULT_RANGE="0-9 130-159"
+
+# Multiple endpoints untuk cek koneksi (majority vote)
+ENDPOINTS="http://www.gstatic.com/generate_204 http://connectivitycheck.gstatic.com/generate_204 http://cp.cloudflare.com/"
+
+# Minimal berapa endpoint harus online (majority vote)
+REQUIRED_ONLINE=2
+
+# Load IP range from config
+load_ip_range() {
+    if [ -f "$CONFIG_FILE" ]; then
+        RANGE_CONFIG=$(cat "$CONFIG_FILE" 2>/dev/null | tr -d '\n')
+    else
+        RANGE_CONFIG="$DEFAULT_RANGE"
+    fi
+}
+
+# Check if octet2 is in allowed range
+check_ip_range() {
+    local octet2=$1
+    load_ip_range
+
+    # Parse each range (format: "0-9 130-159" or "0-20 130-159")
+    for range in $RANGE_CONFIG; do
+        min=$(echo "$range" | cut -d'-' -f1)
+        max=$(echo "$range" | cut -d'-' -f2)
+
+        if [ -n "$min" ] && [ -n "$max" ]; then
+            if [ "$octet2" -ge "$min" ] && [ "$octet2" -le "$max" ]; then
+                return 0  # Match found
+            fi
+        fi
+    done
+    return 1  # No match
+}
+
+check_connectivity() {
+    ONLINE_COUNT=0
+
+    for URL in $ENDPOINTS; do
+        HTTP_STATUS=$(curl -Is -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 8 "$URL" 2>/dev/null)
+        if [ "$HTTP_STATUS" -eq 204 ]; then
+            ONLINE_COUNT=$((ONLINE_COUNT + 1))
+        fi
+    done
+
+    [ $ONLINE_COUNT -ge $REQUIRED_ONLINE ] && echo "1" || echo "0"
+}
+
+trigger_airplane_mode() {
+    echo "[$(date '+%H:%M:%S')] ✈️ Hybrid Trigger: Resetting Radio..." >> "$LOG_FILE"
+    
+    # 1. Metode Modern (Android 11+)
+    adb shell "cmd connectivity airplane-mode enable"
+    
+    # 2. Metode Legacy (Android 10 kebawah)
+    adb shell "settings put global airplane_mode_on 1"
+    adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true"
+    
+    sleep 3
+    
+    # 3. Mematikan (Kebalikan urutan)
+    adb shell "cmd connectivity airplane-mode disable"
+    adb shell "settings put global airplane_mode_on 0"
+    adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false"
+}
+
+while true; do
+    IP=$(adb shell "ip addr | grep -E 'rmnet|ccmni|pdp' -A2 | grep 'inet 10\.' | awk '{print \$2}' | cut -d/ -f1 | head -n 1")
+
+    if [ -n "$IP" ]; then
+        OCTET2=$(echo "$IP" | cut -d. -f2)
+
+        if check_ip_range "$OCTET2"; then
+            echo "[$(date '+%H:%M:%S')] 🔍 MATCH: $IP. 10s..." >> "$LOG_FILE"
+            sleep 10
+            
+            CHECK_SUCCESS=$(check_connectivity)
+            if [ "$CHECK_SUCCESS" -eq 1 ]; then
+                echo "[$(date '+%H:%M:%S')] ✅ ONLINE: $IP. Monitoring start..." >> "$LOG_FILE"
+                
+                while true; do
+                    sleep 10
+                    MONITOR_STATUS=$(check_connectivity)
+
+                    if [ "$MONITOR_STATUS" -eq 0 ]; then
+                        echo "[$(date '+%H:%M:%S')] ⏳ JITTER: Connection unstable, retrying..." >> "$LOG_FILE"
+
+                        STILL_OFFLINE=1
+                        for r in 1 2 3 4 5; do
+                            sleep 3
+                            RETRY_STATUS=$(check_connectivity)
+                            if [ "$RETRY_STATUS" -eq 1 ]; then
+                                echo "[$(date '+%H:%M:%S')] ✨ RECOVERED: Connection is back!" >> "$LOG_FILE"
+                                STILL_OFFLINE=0
+                                break
+                            fi
+                            echo "[$(date '+%H:%M:%S')] ⏳ RETRY: ($r/5) still no response..." >> "$LOG_FILE"
+                        done
+
+                        if [ "$STILL_OFFLINE" -eq 1 ]; then
+                            echo "[$(date '+%H:%M:%S')] ‼️ LOST CONNECTION! Switching IP..." >> "$LOG_FILE"
+                            break
+                        fi
+                    fi
+                done
+            fi
+        else
+            echo "[$(date '+%H:%M:%S')] ❌ MISMATCH: $IP" >> "$LOG_FILE"
+        fi
+    else
+        echo "[$(date '+%H:%M:%S')] 🔍 SEARCHING..." >> "$LOG_FILE"
+    fi
+
+    trigger_airplane_mode
+    sleep 15
+done
