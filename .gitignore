@@ -1,0 +1,29 @@
+# Logs
+*.log
+ip_hunter.log
+
+# Config files (local only)
+*_range.conf
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Build artifacts
+*.o
+*.so
+*.pyc
+
+# GitHub (use main branch, not these)
+README.md
+LICENSE
